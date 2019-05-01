@@ -186,7 +186,7 @@ PROGRAM solver
      !*Frustum Volume*!
 !!     if (i==2) then
 !!        dx=dx/2.0
-flux!!     end if
+!!     end if
      Vol(i)=(pi*dx/3.0)*( (r(i)**2)+(r(i-1)**2)+r(i)*r(i-1) )
      deltaS(i)=S(i)-S(i-1)
      deltaVol(i)=Vol(i)
@@ -235,6 +235,7 @@ flux!!     end if
 
   !------------------------------------------------------------
   write(*,*) 'T=', 0
+  t=0
   Do i=1,NI
      write(*,*) 'q1,q2,q3', q(1,i,t), q(2,i,t), q(3,i,t)
   End do
@@ -501,7 +502,7 @@ flux!!     end if
 
 write(*,*) 'L2norm(1,t)'
 do t=1,NT
-   write(*,*), t, L2norm(1,t)
+   write(*,*) t, L2norm(1,t)
 end do
 write(*,*)
 
@@ -521,22 +522,22 @@ end do
 
 write(*,*) 'L2norm(5,m)'
 do m=1,15
-   write(*,*), newtonL2norm(0,m)
+   write(*,*) newtonL2norm(0,m)
 end do
 write(*,*)
 write(*,*) 'L2norm(10,m)'
 do m=1,15
-   write(*,*), newtonL2norm(10,m)
+   write(*,*) newtonL2norm(10,m)
 end do
 write(*,*)
 write(*,*) 'L2norm(15,m)'
 do m=1,15
-   write(*,*), newtonL2norm(20,m)
+   write(*,*) newtonL2norm(20,m)
 end do
 write(*,*)
 write(*,*) 'L2norm(40,m)'
 do m=1,15
-   write(*,*), newtonL2norm(50,m)
+   write(*,*) newtonL2norm(50,m)
 end do
 write(*,*)
 

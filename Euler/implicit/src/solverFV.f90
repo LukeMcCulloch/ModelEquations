@@ -184,6 +184,8 @@ PROGRAM solver
      write(*,*) 'deltaS', deltaS(i)
   end do
   
+  
+Write(6,*) 'setup inflow'
   freestreamMach=1.5
   gamma=1.4
   !* --------------- Compute Q inflow -------------- *!
@@ -214,6 +216,7 @@ PROGRAM solver
 
   !------------------------------------------------------------
   write(*,*) 'T=', 0
+  t=0
   Do i=1,NI
      write(*,*) 'q1,q2,q3', q(1,i,t), q(2,i,t), q(3,i,t)
   End do
@@ -405,11 +408,13 @@ PROGRAM solver
 
   End do    !! End Timestep
 
+  
+Write(6,*) 'End Euler Scheme'
 !!----------------------------End Euler Scheme----------------------------------------
 
 write(*,*) 'L2norm(1,t)'
 do t=1,NT
-   write(*,*), t, L2norm(1,t)
+   write(*,*) t, L2norm(1,t)
 end do
 write(*,*)
 
@@ -500,6 +505,7 @@ end do
 
 
 
+Write(6,*) 'end exact solution at t=40'
 
   ! output Gnuplot file-------------------------Solution---------------------------
   OPEN(UNIT=1, FILE='q1.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
@@ -560,6 +566,7 @@ end do
 !! type:  gnuplot   to open gnuplot
 !! type:  plot "Gnu.dat" w l        to plot
 
+  Write(6,*) 'deallocating'
 
   IF (ALLOCATED(X)) DEALLOCATE(X)
   !IF (ALLOCATED(U)) DEALLOCATE(U) 
