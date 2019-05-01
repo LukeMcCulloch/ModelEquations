@@ -1,10 +1,3 @@
-## Simple make file, It does NOT check for interdependencies of modules.
-## It probably is best to do make clean; make if you change a module.
-
-
-## List main program module last
-## 
-
 SRC_DIRS ?=   #./src
 #BUILD_DIR ?= ./build
 BUILD_DIR ?=  #./src
@@ -14,11 +7,10 @@ RUN_DIR ?= ../run
 #SOURCES:= $(shell find src -name '*.f90')
 
 SOURCES = precise.f90 \
-	input.f90 \
-	initial_conditions.f90 \
 	geo.f90 \
 	inv.f90 \
-	solver.f90
+	Swafftridag.f90 \
+	solverFV.f90
 
 
 ## Define name of main program

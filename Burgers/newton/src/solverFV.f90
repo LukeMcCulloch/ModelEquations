@@ -12,7 +12,7 @@
 PROGRAM solver
 
   use precise, only : defaultp   ! Module to handle precision
-  use GEO                        ! Module to write the Points on the surface
+  use geo                        ! Module to write the Points on the surface
   !!use Source                     ! Module to compute an arbitrary source term.
   use inv                        ! My tri dag inversion module from Spring 2011
   use Swafftridag                ! Swaffs version
@@ -223,22 +223,22 @@ PROGRAM solver
 
 write(*,*) 'L2norm(5,m)'
 do m=1,10
-   write(*,*), L2norm(5,m)
+   write(*,*) L2norm(5,m)
 end do
 write(*,*)
 write(*,*) 'L2norm(10,m)'
 do m=1,10
-   write(*,*), L2norm(10,m)
+   write(*,*) L2norm(10,m)
 end do
 write(*,*)
 write(*,*) 'L2norm(15,m)'
 do m=1,10
-   write(*,*), L2norm(15,m)
+   write(*,*) L2norm(15,m)
 end do
 write(*,*)
 write(*,*) 'L2norm(40,m)'
 do m=1,10
-   write(*,*), L2norm(40,m)
+   write(*,*) L2norm(40,m)
 end do
 write(*,*)
 !!----------------------------Exact Solution----------------------------------------
