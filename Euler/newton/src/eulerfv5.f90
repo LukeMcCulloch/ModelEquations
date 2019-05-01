@@ -17,7 +17,7 @@ PROGRAM solver
   integer, parameter :: WP=defaultp
   real(wp), parameter :: e=2.718281828459045
   REAL(wp), PARAMETER :: pi=4.0*ATAN(1.0) 
-  INTEGER, DIMENSION(5), PARAMETER :: it1 = (/ 1, 5, 10, 15, 40 /)   ! GNU output times
+  INTEGER, DIMENSION(6), PARAMETER :: it1 = (/ 1, 5, 10, 15, 40, 50 /)   ! GNU output times
 
 
   integer::count_0, count1, count2, count_rate, count_max, walltime, tstart, tend
@@ -73,11 +73,11 @@ PROGRAM solver
   NV=NV+1
   NI=NV+1
   dt = 0.5 
-  NT=150
+  NT=500
 
 
 
-
+  NT= NT+1
   Allocate( X(NI) )
 
 !!-----------------------------
@@ -124,7 +124,7 @@ PROGRAM solver
   Allocate( vU(NV,0:NT) )
   Allocate( V(NV) )  
 
-
+  NT= NT-1
 
 
   !* Subroutines to compute grid points  *!
@@ -434,7 +434,6 @@ PROGRAM solver
            deltaQ(j,NI)=0.0
         end do
         
-        norm=0.0
         
         !*-- Update Q --------------------------------------------------------------------*!
         !* Real Indicies *!
@@ -450,7 +449,6 @@ PROGRAM solver
            q(j,1,t)=q(j,1,0)
            q(j,NI,t)=q(j,NI-1,t)
            qf(j,1,t)=qf(j,1,0)
-           !*The condition below "KILL" my solution*!
            qf(j,NV,t)=qf(j,NV-1,t)
         End do
 
@@ -463,9 +461,10 @@ PROGRAM solver
 !!$        
         !*-- Update norm --------------------------------------------------------------------*!
         !* Real Indicies *!
-           Do i=2,NI-1
-              norm=deltaQ(1,i)**2.+deltaQ(2,i)**2+deltaQ(3,i)**2+norm
-           End Do
+         norm=0.0
+         Do i=2,NI-1
+            norm = norm + (deltaQ(1,i)**2.+deltaQ(2,i)**2+deltaQ(3,i)**2)
+         End Do
         !*-- End -------------------------------------------------------------------------*!
         L2norm(1,t)=sqrt(norm)/real(NI-2)
         newtonL2norm(t,m)=L2norm(1,t)
@@ -553,6 +552,11 @@ do m=1,15
    write(*,*) newtonL2norm(50,m)
 end do
 write(*,*)
+write(*,*) 'L2norm(NT,m)'
+do m=1,15
+   write(*,*) newtonL2norm(NT,m)
+end do
+write(*,*)
 
 
 write(6,*) 'Write outputs'
@@ -616,19 +620,32 @@ write(6,*) 'Write outputs'
 !  End do
   CLOSE(UNIT=5)
 
-  write(6,*) 'Write it1(t),newtonL2norm'
-!!-------------------------------------------------------L2NORM----------------------
-  ! output Gnuplot file
-  OPEN(UNIT=6, FILE='newtonL2norm.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
-  Do t=3,5
-     DO m=1,15
-        WRITE(UNIT=6,FMT='(I5," ",E19.10)') m,newtonL2norm(it1(t),m)
-     END DO
-     WRITE(UNIT=6,FMT='(" ")')
-  End do
-  CLOSE(UNIT=6)
+!   write(6,*) 'Write it1(t),newtonL2norm'
+! !!-------------------------------------------------------L2NORM----------------------
+!   ! output Gnuplot file
+!   OPEN(UNIT=6, FILE='newtonL2norm.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
+!   !Do t=3,5
+!      DO m=1,14
+!         !WRITE(UNIT=6,FMT='(I5," ",E19.10)') m,newtonL2norm(it1(t),m)
+!         WRITE(UNIT=6,FMT='(I5," ",E19.10)') m,newtonL2norm(10,m)
+!      END DO
+!      WRITE(UNIT=6,FMT='(" ")')
+     
+!      DO m=1,14
+!       WRITE(UNIT=6,FMT='(I5," ",E19.10)') m,newtonL2norm(15,m)
+!    END DO
+!    WRITE(UNIT=6,FMT='(" ")')
+   
+!    DO m=1,14
+!       WRITE(UNIT=6,FMT='(I5," ",E19.10)') m,newtonL2norm(40,m)
+!    END DO
+!    WRITE(UNIT=6,FMT='(" ")')
 
-  write(6,*) 'Write it1(t),newtonL2norm, Done'
+!   !End do
+!   WRITE(UNIT=6,FMT='(" ")')
+!   CLOSE(UNIT=6)
+
+!   write(6,*) 'Write it1(t),newtonL2norm, Done'
 
 !! Plotting in gnu plot
 !! once in the proper directory in terminal, open a second tab
@@ -638,37 +655,37 @@ write(6,*) 'Write outputs'
   write(6,*) 'deallocating'
 
   
-  write(6,*) 'deallocating 1'
+  write(6,*) 'deallocating X'
   IF (ALLOCATED(X)) DEALLOCATE(X)
   !IF (ALLOCATED(U)) DEALLOCATE(U) 
   !IF (ALLOCATED(Unm)) DEALLOCATE(Unm)   
   !IF (ALLOCATED(Uexact)) DEALLOCATE(Uexact) 
-  IF (ALLOCATED(am)) DEALLOCATE(am) 
-  IF (ALLOCATED(bm)) DEALLOCATE(bm) 
-  IF (ALLOCATED(cm)) DEALLOCATE(cm)  
+  
+  write(6,*) 'deallocating q'
+  IF (ALLOCATED(Q)) DEALLOCATE(Q) 
+  write(6,*) 'deallocating qf'
+  IF (ALLOCATED(Qf)) DEALLOCATE(Qf) 
+  write(6,*) 'deallocating qc'
+  IF (ALLOCATED(qc)) DEALLOCATE(qc)
+
+  write(6,*) 'deallocating f'
+  IF (ALLOCATED(f)) DEALLOCATE(f) 
+  write(6,*) 'deallocating h'
+  IF (ALLOCATED(h)) DEALLOCATE(h) 
+
 
   
-  write(6,*) 'deallocating 2'
-  !IF (ALLOCATED(L1)) DEALLOCATE(L1) 
-  IF (ALLOCATED(L2)) DEALLOCATE(L2) 
-  !IF (ALLOCATED(Aplus)) DEALLOCATE(Aplus)  
-  !IF (ALLOCATED(Aminus)) DEALLOCATE(Aminus) 
-
+  write(6,*) 'deallocating deltaQ'
   !IF (ALLOCATED(Fplus)) DEALLOCATE(Fplus) 
-  !IF (ALLOCATED(Fminus)) DEALLOCATE(Fminus)  
+  !IF (ALLOCATED(Fminus)) DEALLOCATE(Fminus) 
+  IF (ALLOCATED(deltaQ)) DEALLOCATE(deltaQ) 
+
+  write(6,*) 'deallocating RHS' 
   IF (ALLOCATED(RHS)) DEALLOCATE(RHS) 
-
-  !IF (ALLOCATED(Delta)) DEALLOCATE(Delta) 
-
-
-  write(6,*) 'deallocating 3'
-  IF (ALLOCATED(L2norm)) DEALLOCATE(L2norm)
-  IF (ALLOCATED(newtonL2norm)) DEALLOCATE(newtonL2norm)
-
   
-  write(6,*) 'deallocating 4'
-  IF (ALLOCATED(vU)) DEALLOCATE(vU) 
-  IF (ALLOCATED(V)) DEALLOCATE(V) 
+  write(6,*) 'deallocating dfdq, dhdq'
+  IF (ALLOCATED(dfdq)) DEALLOCATE(dfdq)   
+  IF (ALLOCATED(dhdq)) DEALLOCATE(dhdq)   
 
   
   write(6,*) 'deallocating 5'
@@ -679,29 +696,38 @@ write(6,*) 'Write outputs'
   IF (ALLOCATED(Vol)) DEALLOCATE(Vol)
   IF (ALLOCATED(deltaS)) DEALLOCATE(deltaS)
   IF (ALLOCATED(deltaVol)) DEALLOCATE(deltaVol)
-
   
-  write(6,*) 'deallocating qc'
-  IF (ALLOCATED(qc)) DEALLOCATE(qc)
-  write(6,*) 'deallocating qf'
-  IF (ALLOCATED(Qf)) DEALLOCATE(Qf) 
-  write(6,*) 'deallocating q'
-  IF (ALLOCATED(Q)) DEALLOCATE(Q) 
-  write(6,*) 'deallocating f'
-  IF (ALLOCATED(f)) DEALLOCATE(f) 
-  write(6,*) 'deallocating h'
-  IF (ALLOCATED(h)) DEALLOCATE(h) 
   write(6,*) 'deallocating p'
-  IF (ALLOCATED(p)) DEALLOCATE(p)   
+  IF (ALLOCATED(p)) DEALLOCATE(p) 
 
   
-  write(6,*) 'deallocating 7'
-  IF (ALLOCATED(deltaQ)) DEALLOCATE(deltaQ) 
-  IF (ALLOCATED(dfdq)) DEALLOCATE(dfdq)   
-  IF (ALLOCATED(dhdq)) DEALLOCATE(dhdq)   
+  write(6,*) 'deallocating am, bm, cm'
+  IF (ALLOCATED(am)) DEALLOCATE(am) 
+  IF (ALLOCATED(bm)) DEALLOCATE(bm) 
+  IF (ALLOCATED(cm)) DEALLOCATE(cm)  
 
 
+  
+  write(6,*) 'deallocating L2'
+  !IF (ALLOCATED(L1)) DEALLOCATE(L1) 
+  IF (ALLOCATED(L2)) DEALLOCATE(L2) 
+  !IF (ALLOCATED(Aplus)) DEALLOCATE(Aplus)  
+  !IF (ALLOCATED(Aminus)) DEALLOCATE(Aminus) 
 
+
+  !IF (ALLOCATED(Delta)) DEALLOCATE(Delta) 
+
+
+  write(6,*) 'deallocating L2norm'
+  IF (ALLOCATED(L2norm)) DEALLOCATE(L2norm)
+  IF (ALLOCATED(newtonL2norm)) DEALLOCATE(newtonL2norm)
+
+  
+  write(6,*) 'deallocating 4'
+  IF (ALLOCATED(vU)) DEALLOCATE(vU) 
+  IF (ALLOCATED(V)) DEALLOCATE(V) 
+
+  
 END PROGRAM solver
 
 
