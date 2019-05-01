@@ -73,7 +73,7 @@ PROGRAM solver
   NV=NV+1
   NI=NV+1
   dt = 0.5 
-  NT=50
+  NT=150
 
 
 
@@ -146,6 +146,7 @@ PROGRAM solver
      write(*,*) 'I, V(i)', i, V(i)
   end do
   Write(6,*) ''
+  !pause
 
 
   !* Identity Matrix *!
@@ -166,6 +167,14 @@ PROGRAM solver
   Do i=1,NV
      r(i)=1.398+0.347*tanh(0.8*V(i)-4.0)
   End do
+
+  
+  Write(6,'(AA)') 'r Points'
+  do i=1,NV
+     write(*,*) 'I, r(i)', i, r(i)
+  end do
+  Write(6,*) ''
+  !pause
 
   ! x<0 @ i=1 so set x=0
   !r(1)=1.398+0.347*tanh(-4.0)
@@ -200,6 +209,7 @@ PROGRAM solver
      write(*,*) 'deltaS', deltaS(i)
   end do
   
+  Write(6,*) 'setup inflow'
   freestreamMach=1.5
   gamma=1.4
   !* --------------- Compute Q inflow at volume centers and faces-------------- *!
@@ -439,9 +449,9 @@ PROGRAM solver
         Do j=1,3
            q(j,1,t)=q(j,1,0)
            q(j,NI,t)=q(j,NI-1,t)
-           !qf(j,1,t)=qf(j,1,0)
+           qf(j,1,t)=qf(j,1,0)
            !*The condition below "KILL" my solution*!
-           !qf(j,NV,t)=qf(j,NV-1,t)
+           qf(j,NV,t)=qf(j,NV-1,t)
         End do
 
         !*Update Q on the faces*!
@@ -462,9 +472,9 @@ PROGRAM solver
         
         !------------------------------------------------------------
         write(*,*) 'T=', t, 'm=',m
-        !Do i=1,NI
-        !   write(*,*) 'r,q(1-3),deltq(1-3)', i, q(1,i,t), q(2,i,t), q(3,i,t), deltaQ(1,i), deltaQ(2,i), deltaQ(3,i)
-        !End do
+        Do i=1,NI
+           write(*,*) 'r,q(1-3),deltq(1-3)', i, q(1,i,t), q(2,i,t), q(3,i,t), deltaQ(1,i), deltaQ(2,i), deltaQ(3,i)
+        End do
         write(*,*) ''
         !------------------------------------------------------------        
           
@@ -498,6 +508,7 @@ PROGRAM solver
   !*End Timestep*!
   End do
 
+write(6,*) 'End Euler Scheme'
 !!----------------------------End Euler Scheme----------------------------------------
 
 write(*,*) 'L2norm(1,t)'
@@ -509,6 +520,8 @@ write(*,*)
 write(*,*)
 
 
+
+write(6,*) 'Replace q terms with velocity and pressure'
 !*Replace q's with velocity and pressure*!
 do i=1,NI
    !*Velocity*!
@@ -542,6 +555,10 @@ end do
 write(*,*)
 
 
+write(6,*) 'Write outputs'
+
+
+  write(6,*) 'Write x,q1'
   ! output Gnuplot file-------------------------Solution---------------------------
   OPEN(UNIT=1, FILE='q1.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
   DO i=1, NI
@@ -553,6 +570,7 @@ write(*,*)
   !End do
   CLOSE(UNIT=1)
 
+  write(6,*) 'Write x,q2'
   ! output Gnuplot file-------------------------Solution---------------------------
   OPEN(UNIT=3, FILE='q2.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
   DO i=1, NI
@@ -564,6 +582,7 @@ write(*,*)
 !  End do
   CLOSE(UNIT=3)
 
+  write(6,*) 'Write x,q3'
   ! output Gnuplot file-------------------------Solution---------------------------
   OPEN(UNIT=4, FILE='q3.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
   DO i=1, NI
@@ -575,6 +594,7 @@ write(*,*)
 !  End do
   CLOSE(UNIT=4)
 
+  write(6,*) 'Write t,L2norm'
 !!-------------------------------------------------------L2NORM----------------------
   ! output Gnuplot file
   OPEN(UNIT=2, FILE='L2norm.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
@@ -584,9 +604,10 @@ write(*,*)
   WRITE(UNIT=2,FMT='(" ")')
   CLOSE(UNIT=2)
 
+  write(6,*) 'Write x,r'
   ! output Gnuplot file-------------------------Solution---------------------------
   OPEN(UNIT=5, FILE='r.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
-     DO i=1, NI
+     DO i=1, NV
         WRITE(UNIT=5,FMT='(E19.10," ",E19.10)') x(i),r(i)
      End do
      WRITE(UNIT=5,FMT='(" ")')
@@ -595,6 +616,7 @@ write(*,*)
 !  End do
   CLOSE(UNIT=5)
 
+  write(6,*) 'Write it1(t),newtonL2norm'
 !!-------------------------------------------------------L2NORM----------------------
   ! output Gnuplot file
   OPEN(UNIT=6, FILE='newtonL2norm.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
@@ -606,13 +628,17 @@ write(*,*)
   End do
   CLOSE(UNIT=6)
 
+  write(6,*) 'Write it1(t),newtonL2norm, Done'
 
 !! Plotting in gnu plot
 !! once in the proper directory in terminal, open a second tab
 !! type:  gnuplot   to open gnuplot
 !! type:  plot "Gnu.dat" w l        to plot
 
+  write(6,*) 'deallocating'
 
+  
+  write(6,*) 'deallocating 1'
   IF (ALLOCATED(X)) DEALLOCATE(X)
   !IF (ALLOCATED(U)) DEALLOCATE(U) 
   !IF (ALLOCATED(Unm)) DEALLOCATE(Unm)   
@@ -621,6 +647,8 @@ write(*,*)
   IF (ALLOCATED(bm)) DEALLOCATE(bm) 
   IF (ALLOCATED(cm)) DEALLOCATE(cm)  
 
+  
+  write(6,*) 'deallocating 2'
   !IF (ALLOCATED(L1)) DEALLOCATE(L1) 
   IF (ALLOCATED(L2)) DEALLOCATE(L2) 
   !IF (ALLOCATED(Aplus)) DEALLOCATE(Aplus)  
@@ -633,12 +661,17 @@ write(*,*)
   !IF (ALLOCATED(Delta)) DEALLOCATE(Delta) 
 
 
+  write(6,*) 'deallocating 3'
   IF (ALLOCATED(L2norm)) DEALLOCATE(L2norm)
   IF (ALLOCATED(newtonL2norm)) DEALLOCATE(newtonL2norm)
 
+  
+  write(6,*) 'deallocating 4'
   IF (ALLOCATED(vU)) DEALLOCATE(vU) 
   IF (ALLOCATED(V)) DEALLOCATE(V) 
 
+  
+  write(6,*) 'deallocating 5'
 !!$  IF (ALLOCATED(rface)) DEALLOCATE(rface) 
 !!$  IF (ALLOCATED(Sface)) DEALLOCATE(Sface)
   IF (ALLOCATED(r)) DEALLOCATE(r) 
@@ -647,13 +680,22 @@ write(*,*)
   IF (ALLOCATED(deltaS)) DEALLOCATE(deltaS)
   IF (ALLOCATED(deltaVol)) DEALLOCATE(deltaVol)
 
+  
+  write(6,*) 'deallocating qc'
   IF (ALLOCATED(qc)) DEALLOCATE(qc)
+  write(6,*) 'deallocating qf'
   IF (ALLOCATED(Qf)) DEALLOCATE(Qf) 
+  write(6,*) 'deallocating q'
   IF (ALLOCATED(Q)) DEALLOCATE(Q) 
+  write(6,*) 'deallocating f'
   IF (ALLOCATED(f)) DEALLOCATE(f) 
+  write(6,*) 'deallocating h'
   IF (ALLOCATED(h)) DEALLOCATE(h) 
+  write(6,*) 'deallocating p'
   IF (ALLOCATED(p)) DEALLOCATE(p)   
 
+  
+  write(6,*) 'deallocating 7'
   IF (ALLOCATED(deltaQ)) DEALLOCATE(deltaQ) 
   IF (ALLOCATED(dfdq)) DEALLOCATE(dfdq)   
   IF (ALLOCATED(dhdq)) DEALLOCATE(dhdq)   
