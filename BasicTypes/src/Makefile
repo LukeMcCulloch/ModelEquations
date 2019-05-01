@@ -14,13 +14,9 @@ RUN_DIR ?= ../run
 #SOURCES:= $(shell find src -name '*.f90')
 
 SOURCES = precise.f90 \
-	input.f90 \
-	initial_conditions.f90 \
 	geo.f90 \
-	inv.f90 \
+	Swafftridag.f90 \
 	solver.f90
-
-
 ## Define name of main program
 PROGRAM = test
 

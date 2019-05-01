@@ -39,7 +39,7 @@ PROGRAM solver
   use precise, only : defaultp   ! Module to handle precision
   use GEO                        ! Module to write the Points on the surface
   !!use Source                     ! Module to compute an arbitrary source term.
-  use inv                        ! My tri dag inversion module from Spring 2011
+  !use inv                        ! My tri dag inversion module from Spring 2011
   use Swafftridag                ! Swaffs version
  ! use newtri
 
@@ -76,8 +76,8 @@ PROGRAM solver
   NT=40
 
   Allocate( X(NI) )
-  Allocate( xU(NI,NT) )   !!U at each volumetric boundary
-  Allocate( vU(NV,NT) )   !!U at each volumetric centroid
+  Allocate( xU(NI,0:NT) )   !!U at each volumetric boundary
+  Allocate( vU(NV,0:NT) )   !!U at each volumetric centroid
   Allocate( Uexact(NI,NT) )
   Allocate( am(NI) )
   Allocate( bm(NI) )
@@ -99,24 +99,24 @@ PROGRAM solver
   Call D1(NI, dx, X )   ! Subroutine to compute the vector of Points.
   Call V1(NV, dx, V)
 
-!!$  !Check Points - Comment this in the full Version
-!!$  Write(6,'(AA)') 'Points'
-!!$
-!!$  do i=1,NI
-!!$     !write(6,'(2D16.8)') X(i)
-!!$     write(*,*) 'I, X(i)', i, X(i)
-!!$  end do
-!!$  Write(6,*) ''
-!!$
-!!$  !!-------------------------------------
-!!$
-!!$  Write(6,'(AA)') 'Volume Centroids'
-!!$  do i=1,NV
-!!$     !write(6,'(2D16.8)') X(i)
-!!$     write(*,*) 'I, V(i)', i, V(i)
-!!$  end do
-!!$  Write(6,*) ''
-!!$  !Get rid of this in the full Version, obv
+  !Check Points - Comment this in the full Version
+  Write(6,'(AA)') 'Points'
+
+  do i=1,NI
+     !write(6,'(2D16.8)') X(i)
+     write(*,*) 'I, X(i)', i, X(i)
+  end do
+  Write(6,*) ''
+
+  !!-------------------------------------
+
+  Write(6,'(AA)') 'Volume Centroids'
+  do i=1,NV
+     !write(6,'(2D16.8)') X(i)
+     write(*,*) 'I, V(i)', i, V(i)
+  end do
+  Write(6,*) ''
+  !Get rid of this in the full Version, obv
 
 !  write(6,*) NI
 
@@ -163,137 +163,137 @@ PROGRAM solver
   End do
   write(*,*) ''  
 
-pause
+!pause
  
   !End of the IVP B.C. portion------------------------------------------------
 
 
 
 !!--------------Simple Upwind Difference (backward space difference) - Working
-!!$  Write (*,*) '------------------Begin Simple Upwind Difference------------------------'
-!!$  Write (*,*) '-------Program Setup to Find Solutions at the Volume Centroids----------'
-!!$  Do t=1,NT
-!!$     vU(1,t)=vU(2,t-1)     ! Note Phantoms now update
-!!$     vU(NV,t)=vU(NV-1,t-1)
-!!$     Write(*,*) 'Begin Time step t =', t
-!!$     do i=2,NV-1   
-!!$        vU(i,t)=vU(i,t-1)-0.5*dt*((vU(i,t-1)**2.)-(vU(i-1,t-1)**2.))/dx  !! Watch your signs
-!!$     write(*,*) 'i, vol center loc,   U(x,t)   ',i, v(i), vU(i,t)
-!!$     end do
-!!$        !!Update your xU's - How do you update the Cell walls??
-!!$
-!!$     write(*,*) 'End timestep t'
-!!$  end do
+!   Write (*,*) '------------------Begin Simple Upwind Difference------------------------'
+!   Write (*,*) '-------Program Setup to Find Solutions at the Volume Centroids----------'
+!   Do t=1,NT
+!      vU(1,t)=vU(2,t-1)     ! Note Phantoms now update
+!      vU(NV,t)=vU(NV-1,t-1)
+!      Write(*,*) 'Begin Time step t =', t
+!      do i=2,NV-1   
+!         vU(i,t)=vU(i,t-1)-0.5*dt*((vU(i,t-1)**2.)-(vU(i-1,t-1)**2.))/dx  !! Watch your signs
+!      write(*,*) 'i, vol center loc,   U(x,t)   ',i, v(i), vU(i,t)
+!      end do
+!         !!Update your xU's - How do you update the Cell walls??
 
-!!--------------Lax-Friedrichs (Central Space Difference)
+!      write(*,*) 'End timestep t'
+!   end do
+
+! !!--------------Lax-Friedrichs (Central Space Difference)
   
-!!$  Write (*,*) '------------------Begin Lax-Friedrichs Method---------------------------'
-!!$  Do t=1,NT
-!!$     Write(*,*) 'Begin Time step t'
-!!$     vU(1,t)=vU(2,t-1)
-!!$     vU(NV,t)=vU(NV-1,t-1)
-!!$     do i=2,NV-1
-!!$        vU(i,t) =0.5*(vU(i+1,t-1)+vU(i-1,t-1))-0.25*(dt/dx)*((vU(i+1,t-1))**2.-(vU(i-1,t-1))**2.)
-!!$        write(*,*) ' i, X(i)   u(x,t)   ', i, V(i), vU(i,t)
-!!$     end do
-!!$     write(*,*) 'End timestep t'
-!!$  end do
+!   Write (*,*) '------------------Begin Lax-Friedrichs Method---------------------------'
+!   Do t=1,NT
+!      Write(*,*) 'Begin Time step t'
+!      vU(1,t)=vU(2,t-1)
+!      vU(NV,t)=vU(NV-1,t-1)
+!      do i=2,NV-1
+!         vU(i,t) =0.5*(vU(i+1,t-1)+vU(i-1,t-1))-0.25*(dt/dx)*((vU(i+1,t-1))**2.-(vU(i-1,t-1))**2.)
+!         write(*,*) ' i, X(i)   u(x,t)   ', i, V(i), vU(i,t)
+!      end do
+!      write(*,*) 'End timestep t'
+!   end do
 
 
 !!--------------Lax-Wendroff (Central Space Difference)   ------MUST DEBUG THIS CODE!!*!
   
-  Write (*,*) '------------------Begin Lax-Wendroff Method---------------------------'
+!   Write (*,*) '------------------Begin Lax-Wendroff Method---------------------------'
+!   Do t=1,NT
+!      Write(*,*) 'Begin Time step t'
+!      vU(1,t)=vU(2,t-1)
+!      vU(NV,t)=vU(NV-1,t-1)
+!      do i=2,NV-2
+!         L1(i,t-1)=0.25*(dt/dx)*((vU(i+1,t-1))**2.-(vU(i-1,t-1))**2.)
+!         !write(*,*) 'L1(i,t-1)', L1(i,t-1)
+
+!         Aplus(i,t-1)=0.5*( vU(i,t-1) + vU(i+1,t-1)   )
+!         !write(*,*) 'Aplus', Aplus(i,t-1)
+
+!         Aminus(i,t-1)=0.5*( vU(i,t-1) + vU(i-1,t-1)   )
+!         !write(*,*) 'Aminus', Aminus(i,t-1)
+
+!         Fplus(i,t-1)=(vU(i+1,t-1))**2.-(vU(i,t-1))**2.  !* remember to include the 1/2 's *!
+!         Fminus(i,t-1)=(vU(i,t-1))**2.-(vU(i-1,t-1))**2.
+
+!         L2(i,t-1)=0.25*((dt/dx)**2.)*((Aplus(i,t-1)*Fplus(i,t-1))-(Aminus(i,t-1)*Fminus(i,t-1)))
+!         !write(*,*) 'L2', L2(i,t-1)
+!         vU(i,t) =vU(i,t-1) - L1(i,t-1) + L2(i,t-1)
+!         write(*,*) ' X(i)   u(x,t)   ', V(i), vU(i,t)
+!      end do
+!      write(*,*) 'End timestep t'
+!     ! pause
+!   end do
+
+
+  Write (*,*) '------------------Begin Implicit Euler Method--------------------------'
+  ! NI is the number of elements in the diagonal
+  ! am is the subdiagonal
+  ! bm is the diagonal
+  ! cm is the superdiagonal
+  ! U(:,t-1) is the RHS
+  ! U(:,t) is the Solution at time t
+  ! t is indexed from 0 to 30.  NT=30
+  Do i=1,NI-2  !!! Make the Delta matrix which excludes the bc's
+     Delta(i,0)=vU(i+1,0)
+  End do
+  
   Do t=1,NT
-     Write(*,*) 'Begin Time step t'
-     vU(1,t)=vU(2,t-1)
-     vU(NV,t)=vU(NV-1,t-1)
-     do i=2,NV-1
-        L1(i,t-1)=0.25*(dt/dx)*((vU(i+1,t-1))**2.-(vU(i-1,t-1))**2.)
-        !write(*,*) 'L1(i,t-1)', L1(i,t-1)
+  ! Compute the Subdiagonal, a, Diagonal, b, And Superdiagonal, c, Terms
+     !Delta(1,t-1)=1.5!U(1,t-2)
+     !Delta(NI,t-1)=0.5!U(NI,t-2)
 
-        Aplus(i,t-1)=0.5*( vU(i,t-1) + vU(i+1,t-1)   )
-        !write(*,*) 'Aplus', Aplus(i,t-1)
+     do i=2,NI-2
+        am(i)=(-dt/(2.*dx))*Delta(i-1,t-1)
+     End do
 
-        Aminus(i,t-1)=0.5*( vU(i,t-1) + vU(i-1,t-1)   )
-        !write(*,*) 'Aminus', Aminus(i,t-1)
-
-        Fplus(i,t-1)=(vU(i+1,t-1))**2.-(vU(i,t-1))**2.  !* remember to include the 1/2 's *!
-        Fminus(i,t-1)=(vU(i,t-1))**2.-(vU(i-1,t-1))**2.
-
-        L2(i,t-1)=0.25*((dt/dx)**2.)*((Aplus(i,t-1)*Fplus(i,t-1))-(Aminus(i,t-1)*Fminus(i,t-1)))
-        !write(*,*) 'L2', L2(i,t-1)
-        vU(i,t) =vU(i,t-1) - L1(i,t-1) + L2(i,t-1)
-        write(*,*) ' X(i)   u(x,t)   ', V(i), vU(i,t)
-     end do
-     write(*,*) 'End timestep t'
-    ! pause
-  end do
+     do i=1,NI-3
+        cm(i)=(dt/(2.*dx))*Delta(i+1,t-1)
+     End do
 
 
-!!$  Write (*,*) '------------------Begin Implicit Euler Method--------------------------'
-!!$  ! NI is the number of elements in the diagonal
-!!$  ! am is the subdiagonal
-!!$  ! bm is the diagonal
-!!$  ! cm is the superdiagonal
-!!$  ! U(:,t-1) is the RHS
-!!$  ! U(:,t) is the Solution at time t
-!!$  ! t is indexed from 0 to 30.  NT=30
-!!$  Do i=1,NI-2  !!! Make the Delta matrix which excludes the bc's
-!!$     Delta(i,0)=U(i+1,0)
-!!$  End do
-!!$  
-!!$  Do t=1,NT
-!!$  ! Compute the Subdiagonal, a, Diagonal, b, And Superdiagonal, c, Terms
-!!$     !Delta(1,t-1)=1.5!U(1,t-2)
-!!$     !Delta(NI,t-1)=0.5!U(NI,t-2)
-!!$
-!!$     do i=2,NI-2
-!!$        am(i)=(-dt/(2.*dx))*Delta(i-1,t-1)
-!!$     End do
-!!$
-!!$     do i=1,NI-3
-!!$        cm(i)=(dt/(2.*dx))*Delta(i+1,t-1)
-!!$     End do
-!!$
-!!$
-!!$     do i=1,NI-2
-!!$
-!!$       
-!!$       Fplus(i,t-1)=((U(i+2,t-1))**2.)/2.  !* remember to include the 1/2 's later*!
-!!$       Fminus(i,t-1)=((U(i,t-1))**2.)/2.
-!!$
-!!$
-!!$       bm(i)=1.
-!!$
-!!$    end do
-!!$
-!!$    !am(1)=0.
-!!$    !cm(NI)=0.
-!!$    !Fplus(NI,t-1)=0.
-!!$    !Fminus(1,t-1)=0.
-!!$
-!!$    !! Solve for the delta U(:,t)
-!!$
-!!$    !! Call my solver
-!!$    !Call tlmtri (am(:),bm(:),cm(:),-.5*(dt/dx)*(Fplus(:,t-1)-Fminus(:,t-1)),Delta(:,t),NI-2)
-!!$
-!!$    !! Call Swaff Solver
-!!$    Call trid (am,bm,cm,(-.5*(dt/dx)*(Fplus(:,t-1)-Fminus(:,t-1))),Delta(:,t),NI-2)
-!!$    
-!!$    !!Convert to U(:,t)
-!!$    Do i=1,NI-2
-!!$    Delta(i,t)=Delta(i,t-1)+Delta(i,t)
-!!$    U(i+1,t)=Delta(i,t)
-!!$    End Do
-!!$    !Delta(:,t)=Delta(:,t-1)
-!!$    U(1,t)=1.5
-!!$    U(NI,t)=0.5
-!!$
-!!$    write(6,*) 'Timestep', T
-!!$    Do i=1,NI
-!!$       write(*,*) 'new U(i,t)', U(i,t) 
-!!$    End do    
-!!$ End do
+     do i=1,NI-2
+
+       
+       Fplus(i,t-1)=((vU(i+2,t-1))**2.)/2.  !* remember to include the 1/2 's later*!
+       Fminus(i,t-1)=((vU(i,t-1))**2.)/2.
+
+
+       bm(i)=1.
+
+    end do
+
+    !am(1)=0.
+    !cm(NI)=0.
+    !Fplus(NI,t-1)=0.
+    !Fminus(1,t-1)=0.
+
+    !! Solve for the delta U(:,t)
+
+    !! Call my solver
+    !Call tlmtri (am(:),bm(:),cm(:),-.5*(dt/dx)*(Fplus(:,t-1)-Fminus(:,t-1)),Delta(:,t),NI-2)
+
+    !! Call Swaff Solver
+    Call trid (am,bm,cm,(-.5*(dt/dx)*(Fplus(:,t-1)-Fminus(:,t-1))),Delta(:,t),NI-2)
+    
+    !!Convert to U(:,t)
+    Do i=1,NI-2
+       Delta(i,t)=Delta(i,t-1)+Delta(i,t)
+       vU(i+1,t)=Delta(i,t)
+    End Do
+    !Delta(:,t)=Delta(:,t-1)
+    vU(1,t)=1.5
+    vU(NI,t)=0.5
+
+    write(6,*) 'Timestep', T
+    Do i=1,NI
+       write(*,*) 'new U(i,t)', vU(i,t) 
+    End do    
+ End do
 
 !!----------------------------End Euler Scheme----------------------------------------
 
@@ -321,6 +321,7 @@ pause
 !!----------------------------End Exact Solution----------------------------------------
 
 
+ Write(6,*) 'v, vU (velocity at the FV centroids)'
   ! output Gnuplot file
   OPEN(UNIT=1, FILE='LaxWendroff.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
   !IF (ios /= 0) THEN
@@ -334,6 +335,9 @@ pause
      END DO
      WRITE(UNIT=1,FMT='(" ")')
   End Do
+
+  
+ Write(6,*) 'v, U exact'
   Do i=1,NI
      WRITE(UNIT=1,FMT='(E19.10," ",E19.10)') v(i)+dt*Nt*0.5*(1.5+.5),Uexact(i,40) 
   End do
@@ -352,34 +356,49 @@ pause
 
 
 
+  Write(6,*) 'deallocating'
 
 
-!!$  IF (ALLOCATED(Points)) DEALLOCATE(Points)
-!!$  IF (ALLOCATED(S)) DEALLOCATE(S)
-!!$  IF (ALLOCATED(T)) DEALLOCATE(T) 
-!!$  IF (ALLOCATED(To)) DEALLOCATE(To) 
-!!$  IF (ALLOCATED(Treal)) DEALLOCATE(Treal) 
+!   IF (ALLOCATED(Points)) DEALLOCATE(Points)
+!   IF (ALLOCATED(S)) DEALLOCATE(S)
+!   IF (ALLOCATED(T)) DEALLOCATE(T) 
+!   IF (ALLOCATED(To)) DEALLOCATE(To) 
+!   IF (ALLOCATED(Treal)) DEALLOCATE(Treal) 
+  
+  Write(6,*) 'deallocating x'
   IF (ALLOCATED(X)) DEALLOCATE(X)
+  Write(6,*) 'deallocating xU'
   IF (ALLOCATED(xU)) DEALLOCATE(xU) 
+  Write(6,*) 'deallocating vU'
   IF (ALLOCATED(vU)) DEALLOCATE(vU) 
+  Write(6,*) 'deallocating Uexact'
   IF (ALLOCATED(Uexact)) DEALLOCATE(Uexact) 
+  Write(6,*) 'deallocating a,b,c'
   IF (ALLOCATED(am)) DEALLOCATE(am) 
   IF (ALLOCATED(bm)) DEALLOCATE(bm) 
   IF (ALLOCATED(cm)) DEALLOCATE(cm)  
 
+  Write(6,*) 'deallocating L1'
   IF (ALLOCATED(L1)) DEALLOCATE(L1) 
   IF (ALLOCATED(L2)) DEALLOCATE(L2) 
+  Write(6,*) 'deallocating Aplus'
   IF (ALLOCATED(Aplus)) DEALLOCATE(Aplus)  
   IF (ALLOCATED(Aminus)) DEALLOCATE(Aminus) 
 
+  Write(6,*) 'deallocating Fplus'
   IF (ALLOCATED(Fplus)) DEALLOCATE(Fplus) 
   IF (ALLOCATED(Fminus)) DEALLOCATE(Fminus)  
 
+  
+  Write(6,*) 'deallocating Delta'
   IF (ALLOCATED(Delta)) DEALLOCATE(Delta) 
   IF (ALLOCATED(RHS)) DEALLOCATE(RHS) 
 
+  
+  Write(6,*) 'deallocating V'
   IF (ALLOCATED(V)) DEALLOCATE(V)
 
+  Write(6,*) 'End Program'
 END PROGRAM solver
 
 
