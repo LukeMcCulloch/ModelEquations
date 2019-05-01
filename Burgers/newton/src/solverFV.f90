@@ -56,7 +56,8 @@ PROGRAM solver
   NT=40
 
   Allocate( X(NI) )
-  Allocate( U(NI,NT) )
+  Allocate( U(NI,0:NT) )
+  Allocate( Unm(NI,0:NT) )
   Allocate( Uexact(NI,NT) )
   Allocate( am(NI-3) )
   Allocate( bm(NI-2) )
@@ -73,11 +74,10 @@ PROGRAM solver
 
   Allocate( Delta(NI-2,NT) ) 
   Allocate( RHS(NI,NT) )
-  Allocate( Unm(NI,NT) )
 
   Allocate( L2norm(NT,10) )
   !! Allocate the FV variables
-  Allocate( vU(NV,NT) )
+  Allocate( vU(NV,0:NT) )
   Allocate( V(NV) )  
 
  
@@ -219,6 +219,7 @@ PROGRAM solver
 
   End do    !! End Timestep
 
+  write(6,*) 'End Euler Scheme'
 !!----------------------------End Euler Scheme----------------------------------------
 
 write(*,*) 'L2norm(5,m)'
@@ -254,6 +255,7 @@ write(*,*)
 !!----------------------------End Exact Solution----------------------------------------
 
 
+ write(6,*) 'Write x,U'
   ! output Gnuplot file-------------------------Solution---------------------------
   OPEN(UNIT=1, FILE='EulerImplicit_FV.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
   !IF (ios /= 0) THEN
@@ -272,6 +274,7 @@ write(*,*)
   End do
   CLOSE(UNIT=1)
 
+write(6,*) 'Write t,L2norm'
 !!-------------------------------------------------------L2NORM----------------------
   ! output Gnuplot file
   OPEN(UNIT=2, FILE='L2norm.dat',FORM='FORMATTED',STATUS='REPLACE')!,IOSTAT=ios)
@@ -291,7 +294,11 @@ write(*,*)
 !! type:  plot "Gnu.dat" w l        to plot
 
 
+  write(6,*) 'deallocating'
+  
+  write(6,*) 'deallocating x'
   IF (ALLOCATED(X)) DEALLOCATE(X)
+  write(6,*) 'deallocating U'
   IF (ALLOCATED(U)) DEALLOCATE(U) 
   IF (ALLOCATED(Unm)) DEALLOCATE(Unm)   
   IF (ALLOCATED(Uexact)) DEALLOCATE(Uexact) 
@@ -299,25 +306,34 @@ write(*,*)
   IF (ALLOCATED(bm)) DEALLOCATE(bm) 
   IF (ALLOCATED(cm)) DEALLOCATE(cm)  
 
+  
+  write(6,*) 'deallocating L1'
   IF (ALLOCATED(L1)) DEALLOCATE(L1) 
   IF (ALLOCATED(L2)) DEALLOCATE(L2) 
   IF (ALLOCATED(Aplus)) DEALLOCATE(Aplus)  
   IF (ALLOCATED(Aminus)) DEALLOCATE(Aminus) 
 
+  
+  write(6,*) 'deallocating Fplus'
   IF (ALLOCATED(Fplus)) DEALLOCATE(Fplus) 
   IF (ALLOCATED(Fminus)) DEALLOCATE(Fminus)  
   IF (ALLOCATED(F)) DEALLOCATE(F) 
 
+  write(6,*) 'deallocating Delta'
   IF (ALLOCATED(Delta)) DEALLOCATE(Delta) 
   IF (ALLOCATED(RHS)) DEALLOCATE(RHS) 
 
 
+  write(6,*) 'deallocating L2 norm'
   IF (ALLOCATED(L2norm)) DEALLOCATE(L2norm)
   !!Deallocate FV variables
 
+  
+  write(6,*) 'deallocating V'
   IF (ALLOCATED(vU)) DEALLOCATE(vU) 
   IF (ALLOCATED(V)) DEALLOCATE(V) 
 
+  write(6,*) 'End Program'
 END PROGRAM solver
 
 
