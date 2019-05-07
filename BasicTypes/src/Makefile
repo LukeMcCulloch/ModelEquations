@@ -15,6 +15,7 @@ RUN_DIR ?= ../run
 
 SOURCES = precise.f90 \
 	geo.f90 \
+	inv.f90 \
 	Swafftridag.f90 \
 	solver.f90
 ## Define name of main program
